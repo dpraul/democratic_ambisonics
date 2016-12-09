@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+
+{% block title %}Room {{ room_id }}{% endblock %}
+
+{% block body -%}
+	<p>This Example just print's the raw accelerometer and gyro data. Will return null if no device information is found.</p>
+	<p>gyro.getFeatures: <span id="features"></span></p>
+	<div id="example"></div>
+
+    <p>Room id: <b>{{ room_id }}</b></p>
+    <p>Average ping/pong latency: <b><span id="ping-pong"></span>ms</b></p>
+    <h2>Receive:</h2>
+    <div id="log"></div>
+{%- endblock %}
