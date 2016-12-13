@@ -66,4 +66,4 @@ def disconnect():
 
 
 if __name__ == '__main__':
-    sock.run(app, debug=True)
+    sock.run(app, debug=True, host='0.0.0.0')
