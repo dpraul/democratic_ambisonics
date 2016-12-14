@@ -34,6 +34,7 @@ def connect():
 
 @sock.on('join', namespace='/voter')
 def voter_join(message):
+    global GYRO
     if len(rooms()) > 1:
         emit('error', {'m': 'Cannot join multiple rooms.'})
         return
@@ -43,6 +44,7 @@ def voter_join(message):
         emit('error', {'m': "Invalid room."})
     else:
         join_room(room)
+        GYRO.setdefault(room, {})
         emit('joined', {'m': 'Joined room %s' % room})
 
 
@@ -50,9 +52,11 @@ def voter_join(message):
 def vote_gyro(message):
     global GYRO
     room = rooms()[0]
-    gyro = message.get('gyro', 0)
-    GYRO[room][request.sid] = gyro
-    emit('pong')
+    GYRO[room][str(request.sid)] = {
+        'az': message.get('az', 0), 'el': message.get('el', 0), 'ch': message.get('ch', [])
+    }
+    print(GYRO)
+    # emit('pong')
 
 
 @sock.on('disconnect', namespace='/voter')

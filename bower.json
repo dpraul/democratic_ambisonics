@@ -2,8 +2,8 @@
   "name": "democratic_ambisonics",
   "version": "0.0.0",
   "dependencies": {
-    "gyro.js": "^1.0.0",
     "socket.io-client": "^1.7.1",
-    "jquery": "^3.1.1"
+    "jquery": "^3.1.1",
+    "gyronorm": "^2.0.4"
   }
 }

@@ -1,0 +1,57 @@
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background: #A7DBD8;
+    font-family: Helvetica, Arial, sans-serif;
+}
+
+.hidden {
+    display: none;
+}
+
+
+#no_gyro, #calibration, #how_to, #bad_room, #vote {
+    width: 100%;
+    height: 100%;
+    text-align: center;
+}
+
+
+#btn_recalibrate {
+    height: 8%;
+    width: 92%;
+    margin: 1% 3%;
+}
+
+#vote_buttons {
+    height: 90%;
+    width: 100%;
+}
+
+#vote_buttons button {
+    display: inline-block;
+    margin: 20px;
+    font-size: 3em;
+}
+
+button {
+    outline: 0;
+    border: none;
+    background-color: #E0E4CC;
+    color: black;
+    font-size: 2em;
+    border-radius: 15px;
+    box-shadow: 7px 10px #69D2E7;
+}
+/*
+button:hover, button.hover {
+  background-color: #F38630
+}
+*/
+button:active, button.active, button.selected {
+  background-color: #FA6900;
+  box-shadow: 2px 5px #69D2E7;
+  transform: translateY(5px);
+}
