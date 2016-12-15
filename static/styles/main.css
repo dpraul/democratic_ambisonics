@@ -45,11 +45,7 @@ button {
     border-radius: 15px;
     box-shadow: 7px 10px #69D2E7;
 }
-/*
-button:hover, button.hover {
-  background-color: #F38630
-}
-*/
+
 button:active, button.active, button.selected {
   background-color: #FA6900;
   box-shadow: 2px 5px #69D2E7;

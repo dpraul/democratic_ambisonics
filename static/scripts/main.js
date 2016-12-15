@@ -1,11 +1,11 @@
 var namespace, socket, gyro,
     room_id, num_channels,
     selected_channels = [],
-    in_room = false, do_send = false,
-    latency_times = [], start_time;
+    in_room = false, do_send = false;
 
 
 function getRoomId() {
+    // RoomId is encoded in the URL as /<room_name>/<num_channels>/
     var url_parts = window.location.pathname.split('/');
     if (url_parts.length < 3) {
         room_id = undefined;
@@ -13,6 +13,7 @@ function getRoomId() {
     else {
         room_id = url_parts[1] + url_parts[2];
         num_channels = parseInt(url_parts[2]);
+        // this should be handled by <int:num_channels> in flask, but juuust in case.
         if (isNaN(num_channels) || num_channels == 0) {
             room_id = undefined;
         }
@@ -21,15 +22,18 @@ function getRoomId() {
 
 
 function onNoGyroSupport() {
+    // No gyro support, so just tell them they suck.
     document.getElementById('no_gyro').className = '';  // shows
 }
 
 
 function startCalibration() {
+    // Gyro check is done by gyro.init(), but that only checks browser support
+    // gyro.isAvailable() checks if more than just zeros are received
     if (gyro.isAvailable(GyroNorm.DEVICE_ORIENTATION)) {
         gyro.start(onGyroDataReceive);
         document.getElementById('calibration').className = '';  // shows
-        openSocket();
+        openSocket();  // get the socket opened now so that the room can be joined early.
     }
     else {
         onNoGyroSupport();
@@ -45,7 +49,7 @@ function onCalibrateClick() {
 
 
 function onGyroDataReceive(gyro_data) {
-    // we only want elevation -90 < el < 90
+    // we only want elevation -90 < el < 90. The rest is ridiculous.
     var el = gyro_data.do.beta;
     if (el < -90) {
         el = -90.0;
@@ -56,7 +60,7 @@ function onGyroDataReceive(gyro_data) {
 
     if (!do_send) {
         document.getElementById('az').innerHTML = '' + gyro_data.do.alpha;
-        document.getElementById('el').innerHTML = '' + gyro_data.do.beta;
+        document.getElementById('el').innerHTML = '' + el;
     }
     if (in_room && do_send && selected_channels.length > 0) {
         socket.emit('vote_gyro', {az: gyro_data.do.alpha, el: el, ch: selected_channels});
@@ -65,6 +69,8 @@ function onGyroDataReceive(gyro_data) {
 
 
 function onRecalibrateClick() {
+    // This doesn't seem to have any effect.
+    // Might need to clear prior head first.
     gyro.setHeadDirection();
 }
 
@@ -78,6 +84,7 @@ function onStartClick() {
 
 
 function createVoterUI() {
+    // create a roughly even grid of buttons
     var container = document.getElementById('vote_buttons'),
         totalWidth = container.offsetWidth,
         totalHeight = container.offsetHeight,
@@ -88,8 +95,10 @@ function createVoterUI() {
         selected = Math.floor(Math.random() * num_channels) + 1,
         btn, i = 1;
 
+    // select a random channel so the client always sends something
     selected_channels.push(selected + '');
 
+    // this button creation could be done in Jinja2, but oh well.
     for (var row = 0; row < numRows; row++) {
         for (var col = 0; col < numCols; col++) {
             btn = document.createElement('button');
@@ -104,7 +113,7 @@ function createVoterUI() {
             container.appendChild(btn);
 
             i++;
-            if (i > num_channels) {
+            if (i > num_channels) {  // stop if we hit the number we need.
                 return;
             }
         }
@@ -131,6 +140,7 @@ function openSocket() {
 
     socket = io.connect(namespace);
     socket.on('connected', function () {
+        // after connection, join the current room.
         socket.emit('join', {room: room_id});
     });
 
@@ -138,16 +148,10 @@ function openSocket() {
         in_room = true;
     });
 
-    socket.on('pong', function () {
-        var latency = (new Date).getTime() - start_time;
-        latency_times.push(latency);
-        if (latency_times.length > 30) {
-            latency_times.shift(); // remove oldest sample
-        }
-        var sum = latency_times.reduce(function(a, b) { return a + b; }, 0);
-        $('#ping-pong').text(Math.round(10 * sum / latency_times.length) / 10);
-    });
-
+    /*
+        Debug and error messages may be sent, but some of them don't mean much
+        as there are bugs in the server - so let's just ignore them!
+     */
     socket.on('debug', function (msg) {
         // msg.m
     });
@@ -171,7 +175,7 @@ $(document).ready(function() {
 
     gyro = new GyroNorm();
     gyro.init({
-        frequency: 100,
+        frequency: 200,
         gravityNormalized: true,
         orientationBase: GyroNorm.GAME,
         decimalCount: 4,
