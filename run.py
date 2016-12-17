@@ -85,6 +85,10 @@ def voter_join(message):
 def vote_gyro(message):
     global GYRO
     room = rooms()[0]
+
+    if room is None or room == request.sid:
+        print(room, request.sid)
+        return
     GYRO[room][str(request.sid)] = {
         'az': message.get('az', 0.0), 'el': message.get('el', 0.0), 'ch': message.get('ch', [])
     }
