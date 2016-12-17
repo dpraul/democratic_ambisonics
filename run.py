@@ -1,6 +1,10 @@
+import six
+
 from flask import Flask, render_template, request, make_response, jsonify
 from flask_socketio import SocketIO, emit, join_room, leave_room, rooms
 
+if six.PY2:
+    range = xrange
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'this_is_totally_a_secret'  # required to let WebSockets work.
@@ -31,8 +35,8 @@ def get_votes(room_name, num_channels):
     room_id = get_room_id(room_name, num_channels)
     votes = GYRO.get(room_id, {})
 
-    az, el, count = ([0.0] * num_channels for _ in xrange(3))  # generate all three empty lists at once
-    for sid, vote in votes.iteritems():
+    az, el, count = ([0.0] * num_channels for _ in range(3))  # generate all three empty lists at once
+    for sid, vote in six.iteritems(votes):
         for channel in vote['ch']:
             ch = int(channel) - 1  # usually a 1-indexed string
             az[ch] += vote['az']
@@ -45,7 +49,7 @@ def get_votes(room_name, num_channels):
 def gen_channels(az, el, count):
     # done as generator for efficiency to avoid making multiple list objects
     # grambilib~ uses a range of 0.0 to 1.0 for azimuth and elevation. Input from mobile is scaled accordingly
-    for ch in xrange(len(count)):
+    for ch in range(len(count)):
         if count[ch] > 0:
             yield [
                 az[ch] / count[ch] / 360.0,  # input comes in range of 0 to 360 degrees
