@@ -3,9 +3,15 @@
 ## Goal
 
 Let the audience vote how they want a piece to sound! Audience members will use their phones to point where
-they want an instrument in a piece to come out in an ambisonics array. To so so, a piece must be exported so
-each instrument is in a single channel of a multichannel WAVE file. Thereafter, a web server communicates
-gyroscope data from the phones to give each person a vote on how the piece plays.
+they want a sound/instrument/channel to be spatialized in an ambisonics array. To do so, a piece must be exported so
+each sound/instrument is in a single channel of a multichannel WAVE file. Thereafter, a web server corresponds
+averaged gyroscope data from the phones to a Pure Data patch as it plays the piece.
+
+## Requirements
+
+ - Python 3.5 or 2.7
+ - Node (for NPM, to get Bower)
+ - Pure Data vanilla
 
 
 ## Setup
@@ -22,14 +28,15 @@ gyroscope data from the phones to give each person a vote on how the piece plays
     
 ## Running
 
-1. Export your project so each channel you want to control is a different channel in a multichannel WAVE file.
-2. Setup the Pd patch `pd-client/client.pd`  (see Pure Data setup)
+1. Export your project so each sound you want to independently control is a different channel in a multichannel WAVE file.
+2. Setup the Pd patch `pd-client/client.pd`  (see Pure Data setup below)
 3. Run the server with `python run.py` (make sure you're still in the virtualenv)
-4. Assure your server and clients are all connected to the same network (or that your server has a public IP)
+4. Assure your server and clients are all connected to the same network (or that your server has a public IP and 
+   proper port forwarding)
 5. Connect your clients to `http://<YOUR_IP>:5000/<project_name>/<num_channels>`
     - There will probably be KeyError messages in the server console. These are fine (see Known Problems)
-6. Set up audio output and enable DSP in PureData
-7. Hit the bang to start the file open in PureData
+6. Configure audio output settings and enable DSP in Pure Data
+7. Hit the bang to start the file open in Pure Data - wait a few moments.
 8. Hit the toggle to start the file playing
 9. Tell your clients to pick a channel and point a direction. Woo! Democratic ambisonics!
 
@@ -43,8 +50,8 @@ gyroscope data from the phones to give each person a vote on how the piece plays
 4. For each channel:
     1. Connect a send to the output of `[readsf~]` in the form of `[s~ c<CHANNEL NUM>]`.  
         NOTE: There should be (num channels) + 1 outputs on `[readsf~]` as the last output will send a bang 
-        when the file is finished. Assure this is connected to `[s done]`
-    2. At the bottom in the ENCODING section, create a `[r~ c<CHANNEL NUM]` and `[r m<CHANNEL NUM>]` that connects to
+        when the file is finished. Assure this last output is connected to `[s done]`
+    2. At the bottom in the ENCODING section, create a `[r~ c<CHANNEL NUM>]` and `[r m<CHANNEL NUM>]` that connects to
         a `[grambipan~ 3]` of its own.
     3. Route each output of the new `[grambipan~ 3]` to each of the `[s~ e<1-7>]` at the bottom of the file.
 5. Assign the output configuration in `[grambidec~]`, and the output channels in `[dac~]`
@@ -54,7 +61,7 @@ NOTE: There are surely better ways of implementing this in Pure Data. My Pure Da
 
 # Known Problems
 
- - While clients are joining, sometimes the WebSocket messages get the wrong priority for modifying GYRO.
+ - While clients are joining, sometimes the WebSocket processes get the wrong priority for modifying GYRO.
  This is likely a result of a global resources shared by many processes.  
  This means votes might send to a room before it is created. If this happens, KeyError messages will appear
  in the console. After the room is created these will stop.
